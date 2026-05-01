@@ -4,7 +4,7 @@ VERSION        = 1.2.0
 DMG_NAME       = Claude-Usage-Bar.dmg
 SPARKLE_TOOLS  = .build/artifacts/sparkle/Sparkle/bin
 SPARKLE_FW     = .build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework
-APPCAST_URL    = https://raw.githubusercontent.com/chrisrouse/claude-usage-bar/main/appcast.xml
+APPCAST_URL    = https://raw.githubusercontent.com/crouseamplify/claude-usage-bar/main/appcast.xml
 PUBLIC_ED_KEY  = E5M8YK8YovgcI9IVtZZOkBXmGGsb08KOqSQ3x51ZiDA=
 
 BUILD_DIR   = dist
