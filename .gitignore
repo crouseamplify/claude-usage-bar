@@ -1,8 +1,8 @@
-__pycache__/
-*.py[cod]
-*.egg-info/
+# Swift / SPM
+.build/
 dist/
-build/
-.venv/
-.env
-*.spec.bak
+*.o
+*.d
+
+# macOS
+.DS_Store
