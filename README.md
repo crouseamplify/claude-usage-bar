@@ -15,7 +15,7 @@ Data is read directly from Claude Code's local session files (`~/.claude/project
 - macOS
 - [Claude Code](https://claude.ai/code) installed and used at least once
 
-## Install (DMG — no Python required)
+## Install
 
 1. Download `Claude-Usage-Bar-x.x.x.dmg` from [Releases](https://github.com/chrisrouse/claude-usagage-bar/releases)
 2. Open the DMG and drag **Claude Usage Bar** to your Applications folder
@@ -26,23 +26,6 @@ Data is read directly from Claude Code's local session files (`~/.claude/project
 
 To launch automatically at login, add it to **System Settings → General → Login Items**.
 
-## Install (pip — requires Python 3.9+)
-
-```bash
-pip install rumps
-git clone https://github.com/chrisrouse/claude-usagage-bar
-cd claude-usagage-bar
-python -m claude_usage_bar
-```
-
-## Build from source
-
-```bash
-git clone https://github.com/chrisrouse/claude-usagage-bar
-cd claude-usagage-bar
-pip install pyinstaller rumps pillow
-make dmg          # → dist/Claude-Usage-Bar-x.x.x.dmg
-```
 
 ## License
 
