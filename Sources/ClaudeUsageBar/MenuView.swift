@@ -1,10 +1,12 @@
 import SwiftUI
+import Sparkle
 
 struct MenuView: View {
     @EnvironmentObject var monitor: UsageMonitor
     @ObservedObject private var s = AppSettings.shared
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismiss) private var dismiss
+    var updater: SPUUpdater?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -211,6 +213,15 @@ struct MenuView: View {
             .font(.system(size: 10))
             .foregroundStyle(.tertiary)
             Spacer()
+            Button("Updates") {
+                updater?.checkForUpdates()
+            }
+            .buttonStyle(.plain)
+            .font(.system(size: 11))
+            .foregroundStyle(.secondary)
+
+            Text("·").foregroundStyle(.tertiary).font(.system(size: 11))
+
             Button("Settings") {
                 dismiss()
                 openWindow(id: "settings")

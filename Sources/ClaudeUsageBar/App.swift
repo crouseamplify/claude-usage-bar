@@ -1,5 +1,6 @@
 import SwiftUI
 import ServiceManagement
+import Sparkle
 
 private func openStartupPrompt() {
     let alert = NSAlert()
@@ -36,6 +37,11 @@ private let statusIcon: NSImage = {
 struct ClaudeUsageBarApp: App {
     @StateObject private var monitor = UsageMonitor()
     @ObservedObject private var settings = AppSettings.shared
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     init() {
         if !AppSettings.shared.hasPromptedStartup {
@@ -48,7 +54,7 @@ struct ClaudeUsageBarApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuView()
+            MenuView(updater: updaterController.updater)
                 .environmentObject(monitor)
         } label: {
             switch settings.menuBarStyle {
