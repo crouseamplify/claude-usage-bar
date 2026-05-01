@@ -2,8 +2,6 @@
 
 A Mac status bar app that shows today's [Claude Code](https://claude.ai/code) token usage at a glance.
 
-![Status bar showing ↑1.2k ↓45.3k](https://img.shields.io/badge/status-alpha-orange)
-
 ## What it shows
 
 - **↑** Input tokens sent today
