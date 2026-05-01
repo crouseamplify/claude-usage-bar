@@ -31,7 +31,7 @@
                     <li>Configurable menu bar style (text or icon)</li>
                 </ul>
             ]]></description>
-            <enclosure url="https://github.com/crouseamplify/claude-usage-bar/releases/download/v1.2-test/Claude-Usage-Bar.dmg" length="1233314" type="application/octet-stream" sparkle:edSignature="lI2RTcXYHmrG4S2LHyQUS5m9X2/m53EddNPvOdxSYCt4esdt8hdpymKMgc9dV5+y2lubUbgHy7RH3Uavos0iBA=="/>
+            <enclosure url="https://github.com/crouseamplify/claude-usage-bar/releases/download/v1.2-test/Claude-Usage-Bar-1.2.0.dmg" length="1233313" type="application/octet-stream" sparkle:edSignature="hdd2CzhaZ1sGEV/TSLdnTolDTtl1DUjgoEKfqdyuYT3bdep9KlVR4Z9JCqJnOuQJ+IqVOYD+wvbmVlHPTQSPAg=="/>
         </item>
     </channel>
 </rss>
