@@ -24,6 +24,7 @@ app:
 	@mkdir -p "$(APP_BUNDLE)/Contents/MacOS"
 	@mkdir -p "$(APP_BUNDLE)/Contents/Resources"
 	@cp ".build/release/$(BINARY_NAME)" "$(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)"
+	@install_name_tool -add_rpath "@executable_path/../Frameworks" "$(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)"
 	@cp assets/AppIcon.icns "$(APP_BUNDLE)/Contents/Resources/AppIcon.icns" 2>/dev/null || true
 	@cp assets/StatusIcon.png "$(APP_BUNDLE)/Contents/Resources/StatusIcon.png" 2>/dev/null || true
 	@cp assets/StatusIcon@2x.png "$(APP_BUNDLE)/Contents/Resources/StatusIcon@2x.png" 2>/dev/null || true
@@ -54,6 +55,8 @@ app:
 
 ## Wrap the .app in a distributable .dmg
 dmg: app
+	@echo "→ Ad-hoc signing app…"
+	@codesign --sign - --force --deep --timestamp=none "$(APP_BUNDLE)"
 	@rm -f "$(BUILD_DIR)/$(DMG_NAME)"
 	create-dmg \
 		--volname "$(APP_NAME)" \
@@ -71,8 +74,6 @@ dmg: app
 
 ## Build DMG, sign it, and generate appcast.xml for Sparkle
 release: dmg
-	@echo "→ Ad-hoc signing app for appcast generation…"
-	@codesign --sign - --force --deep --timestamp=none "$(APP_BUNDLE)"
 	@echo "→ Generating appcast…"
 	"$(SPARKLE_TOOLS)/generate_appcast" "$(BUILD_DIR)"
 	@mv "$(BUILD_DIR)/appcast.xml" appcast.xml 2>/dev/null || true
