@@ -4,6 +4,7 @@ struct MenuView: View {
     @EnvironmentObject var monitor: UsageMonitor
     @ObservedObject private var s = AppSettings.shared
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
@@ -197,8 +198,9 @@ struct MenuView: View {
             .foregroundStyle(.tertiary)
             Spacer()
             Button("Settings") {
-                NSApp.activate(ignoringOtherApps: true)
+                dismiss()
                 openWindow(id: "settings")
+                NSApp.activate(ignoringOtherApps: true)
             }
             .buttonStyle(.plain)
             .font(.system(size: 11))
