@@ -18,7 +18,8 @@ struct UsageReader {
         ) {
             for case let url as URL in enumerator {
                 guard url.pathExtension == "jsonl" else { continue }
-                parseJSONL(at: url, buckets: buckets, summary: &summary, perDay: &perDay)
+                let projectFolder = url.deletingLastPathComponent().lastPathComponent
+                parseJSONL(at: url, projectKey: projectFolder, buckets: buckets, summary: &summary, perDay: &perDay)
             }
         }
 
@@ -38,12 +39,17 @@ struct UsageReader {
 
     private static func parseJSONL(
         at url: URL,
+        projectKey: String,
         buckets: DateBuckets,
         summary: inout UsageSummary,
         perDay: inout [String: DayUsage]
     ) {
         guard let content = try? String(contentsOf: url, encoding: .utf8) else { return }
         let decoder = JSONDecoder()
+
+        if summary.byProject[projectKey] == nil {
+            summary.byProject[projectKey] = ProjectSummary(displayName: projectDisplayName(from: projectKey))
+        }
 
         for line in content.split(separator: "\n", omittingEmptySubsequences: true) {
             let data = Data(line.utf8)
@@ -66,15 +72,42 @@ struct UsageReader {
                 let modelKey = apiMsg.model ?? "unknown"
                 summary.todayByModel[modelKey, default: ModelCost()]
                     .add(tokenUsage: tokenUsage, pricing: pricing)
+                summary.byProject[projectKey]?.today.add(tokenUsage: tokenUsage, pricing: pricing)
+                summary.byProject[projectKey]?.sevenDay.add(tokenUsage: tokenUsage, pricing: pricing)
+                summary.byProject[projectKey]?.thirtyDay.add(tokenUsage: tokenUsage, pricing: pricing)
+                summary.byProject[projectKey]?.todayByModel[modelKey, default: ModelCost()]
+                    .add(tokenUsage: tokenUsage, pricing: pricing)
             } else if buckets.sevenDaySet.contains(day) {
                 summary.sevenDay.add(tokenUsage: tokenUsage, pricing: pricing)
                 summary.thirtyDay.add(tokenUsage: tokenUsage, pricing: pricing)
                 perDay[day]?.add(tokenUsage: tokenUsage, pricing: pricing)
+                summary.byProject[projectKey]?.sevenDay.add(tokenUsage: tokenUsage, pricing: pricing)
+                summary.byProject[projectKey]?.thirtyDay.add(tokenUsage: tokenUsage, pricing: pricing)
             } else if buckets.thirtyDaySet.contains(day) {
                 summary.thirtyDay.add(tokenUsage: tokenUsage, pricing: pricing)
                 perDay[day]?.add(tokenUsage: tokenUsage, pricing: pricing)
+                summary.byProject[projectKey]?.thirtyDay.add(tokenUsage: tokenUsage, pricing: pricing)
             }
         }
+    }
+
+    static func projectDisplayName(from folderName: String) -> String {
+        let s = folderName.hasPrefix("-") ? String(folderName.dropFirst()) : folderName
+        // Strip known macOS path prefixes, leaving just the project-relative path.
+        // Google Drive paths: Users-<name>-Library-CloudStorage-GoogleDrive-<email>-My-Drive-<rest>
+        // The email segment contains dashes, so .*? (non-greedy) anchors on the literal -My-Drive-.
+        let patterns = [
+            #"^Users-[^-]+-Library-CloudStorage-GoogleDrive-.*?-My-Drive-(?:Code-Projects-|code-|Projects-)?"#,
+            #"^Users-[^-]+-(?:Documents|Desktop|code|Code|Projects|Developer)-"#,
+            #"^Users-[^-]+-"#,
+        ]
+        for pattern in patterns {
+            if let range = s.range(of: pattern, options: .regularExpression) {
+                let candidate = String(s[range.upperBound...])
+                if !candidate.isEmpty { return candidate }
+            }
+        }
+        return s
     }
 }
 

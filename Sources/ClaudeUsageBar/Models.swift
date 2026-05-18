@@ -86,6 +86,16 @@ struct ModelCost {
     }
 }
 
+// MARK: - Per-project summary
+
+struct ProjectSummary {
+    var displayName: String
+    var today       = DayUsage()
+    var sevenDay    = DayUsage()
+    var thirtyDay   = DayUsage()
+    var todayByModel: [String: ModelCost] = [:]
+}
+
 // MARK: - Multi-period summary (all built in a single file-scan pass)
 
 struct UsageSummary {
@@ -94,6 +104,7 @@ struct UsageSummary {
     var thirtyDay = DayUsage()   // rolling 30 days including today
     var dailyPoints: [DailyPoint] = []  // 30 days sorted oldest→newest, every day present
     var todayByModel: [String: ModelCost] = [:]
+    var byProject:  [String: ProjectSummary] = [:]  // key = sanitized folder name
 }
 
 // MARK: - Pricing table (per million tokens, USD)

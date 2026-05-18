@@ -1,6 +1,6 @@
 APP_NAME       = Claude Usage Bar
 BUNDLE_ID      = us.chrisrouse.claude-usage-bar
-VERSION        = 1.2.0
+VERSION        = 1.3.0
 DMG_NAME       = Claude-Usage-Bar-$(VERSION).dmg
 SPARKLE_TOOLS  = .build/artifacts/sparkle/Sparkle/bin
 SPARKLE_FW     = .build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework
