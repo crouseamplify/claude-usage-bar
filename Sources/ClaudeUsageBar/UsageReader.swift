@@ -62,7 +62,7 @@ struct UsageReader {
             else { continue }
 
             let day = String(ts.prefix(10))
-            let pricing = ModelPricing.forModel(apiMsg.model)
+            let pricing = ModelPricing.forModel(apiMsg.model, messageDate: parseTimestamp(ts) ?? Date())
 
             if day == buckets.today {
                 summary.today.add(tokenUsage: tokenUsage, pricing: pricing)
@@ -89,6 +89,24 @@ struct UsageReader {
                 summary.byProject[projectKey]?.thirtyDay.add(tokenUsage: tokenUsage, pricing: pricing)
             }
         }
+    }
+
+    private static let isoWithFraction: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
+    private static let isoWithoutFraction: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    /// Parses a session message's ISO 8601 timestamp so cost calculations can pick the
+    /// pricing tier that was in effect when the message actually happened.
+    private static func parseTimestamp(_ ts: String) -> Date? {
+        isoWithFraction.date(from: ts) ?? isoWithoutFraction.date(from: ts)
     }
 
     static func projectDisplayName(from folderName: String) -> String {

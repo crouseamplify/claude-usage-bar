@@ -108,6 +108,8 @@ struct UsageSummary {
 }
 
 // MARK: - Pricing table (per million tokens, USD)
+//
+// Source: https://platform.claude.com/docs/en/about-claude/pricing (fetched 2026-07-14)
 
 struct ModelPricing {
     let input: Double
@@ -115,47 +117,84 @@ struct ModelPricing {
     let cacheRead: Double
     let cacheWrite5m: Double
     let cacheWrite1h: Double
+}
 
-    static let table: [String: ModelPricing] = [
+/// A pricing tier effective starting `effectiveFrom`. Per-model tier lists are sorted
+/// ascending by `effectiveFrom`; lookups use the latest tier whose `effectiveFrom` is on
+/// or before the *message's* timestamp — so a rate change (e.g. Sonnet 5's Sept 1, 2026
+/// step up from introductory pricing) only applies to usage recorded from that date
+/// forward and never rewrites the cost of past messages.
+private struct PricingTier {
+    let effectiveFrom: Date
+    let pricing: ModelPricing
+}
+
+private func utcDate(_ year: Int, _ month: Int, _ day: Int) -> Date {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+    return calendar.date(from: DateComponents(year: year, month: month, day: day))!
+}
+
+extension ModelPricing {
+
+    private static let schedule: [String: [PricingTier]] = [
+        // Claude Fable 5 / Claude Mythos 5 — $10/$50
+        "claude-fable-5":               [.init(effectiveFrom: .distantPast, pricing: .init(input: 10.00, output: 50.00, cacheRead: 1.00, cacheWrite5m: 12.50, cacheWrite1h: 20.00))],
+        "claude-mythos-5":              [.init(effectiveFrom: .distantPast, pricing: .init(input: 10.00, output: 50.00, cacheRead: 1.00, cacheWrite5m: 12.50, cacheWrite1h: 20.00))],
+
         // Opus 4 family — $5/$25
-        "claude-opus-4-7":              .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00),
-        "claude-opus-4-6":              .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00),
-        "claude-opus-4-5":              .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00),
+        "claude-opus-4-8":              [.init(effectiveFrom: .distantPast, pricing: .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00))],
+        "claude-opus-4-7":              [.init(effectiveFrom: .distantPast, pricing: .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00))],
+        "claude-opus-4-6":              [.init(effectiveFrom: .distantPast, pricing: .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00))],
+        "claude-opus-4-5":              [.init(effectiveFrom: .distantPast, pricing: .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00))],
 
         // Opus 4.1 / Opus 4 — $15/$75
-        "claude-opus-4-1":              .init(input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite5m: 18.75, cacheWrite1h: 30.00),
-        "claude-opus-4-0":              .init(input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite5m: 18.75, cacheWrite1h: 30.00),
+        "claude-opus-4-1":              [.init(effectiveFrom: .distantPast, pricing: .init(input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite5m: 18.75, cacheWrite1h: 30.00))],
+        "claude-opus-4-0":              [.init(effectiveFrom: .distantPast, pricing: .init(input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite5m: 18.75, cacheWrite1h: 30.00))],
+
+        // Claude Sonnet 5 — introductory $2/$10 through 2026-08-31, then standard $3/$15
+        "claude-sonnet-5": [
+            .init(effectiveFrom: .distantPast,        pricing: .init(input: 2.00, output: 10.00, cacheRead: 0.20, cacheWrite5m: 2.50, cacheWrite1h: 4.00)),
+            .init(effectiveFrom: utcDate(2026, 9, 1),  pricing: .init(input: 3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m: 3.75, cacheWrite1h: 6.00)),
+        ],
 
         // Sonnet 4 family — $3/$15
-        "claude-sonnet-4-6":            .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00),
-        "claude-sonnet-4-5":            .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00),
-        "claude-sonnet-4-5-20250929":   .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00),
-        "claude-sonnet-4-0":            .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00),
-        "claude-sonnet-3-7":            .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00),
-        "claude-sonnet-3-7-20250219":   .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00),
+        "claude-sonnet-4-6":            [.init(effectiveFrom: .distantPast, pricing: .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00))],
+        "claude-sonnet-4-5":            [.init(effectiveFrom: .distantPast, pricing: .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00))],
+        "claude-sonnet-4-5-20250929":   [.init(effectiveFrom: .distantPast, pricing: .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00))],
+        "claude-sonnet-4-0":            [.init(effectiveFrom: .distantPast, pricing: .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00))],
+        "claude-sonnet-3-7":            [.init(effectiveFrom: .distantPast, pricing: .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00))],
+        "claude-sonnet-3-7-20250219":   [.init(effectiveFrom: .distantPast, pricing: .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00))],
 
         // Haiku 4.5 — $1/$5
-        "claude-haiku-4-5":             .init(input:  1.00, output:  5.00, cacheRead: 0.10, cacheWrite5m:  1.25, cacheWrite1h:  2.00),
-        "claude-haiku-4-5-20251001":    .init(input:  1.00, output:  5.00, cacheRead: 0.10, cacheWrite5m:  1.25, cacheWrite1h:  2.00),
+        "claude-haiku-4-5":             [.init(effectiveFrom: .distantPast, pricing: .init(input:  1.00, output:  5.00, cacheRead: 0.10, cacheWrite5m:  1.25, cacheWrite1h:  2.00))],
+        "claude-haiku-4-5-20251001":    [.init(effectiveFrom: .distantPast, pricing: .init(input:  1.00, output:  5.00, cacheRead: 0.10, cacheWrite5m:  1.25, cacheWrite1h:  2.00))],
 
         // Haiku 3.5 — $0.80/$4
-        "claude-haiku-3-5":             .init(input:  0.80, output:  4.00, cacheRead: 0.08, cacheWrite5m:  1.00, cacheWrite1h:  1.60),
-        "claude-haiku-3-5-20241022":    .init(input:  0.80, output:  4.00, cacheRead: 0.08, cacheWrite5m:  1.00, cacheWrite1h:  1.60),
+        "claude-haiku-3-5":             [.init(effectiveFrom: .distantPast, pricing: .init(input:  0.80, output:  4.00, cacheRead: 0.08, cacheWrite5m:  1.00, cacheWrite1h:  1.60))],
+        "claude-haiku-3-5-20241022":    [.init(effectiveFrom: .distantPast, pricing: .init(input:  0.80, output:  4.00, cacheRead: 0.08, cacheWrite5m:  1.00, cacheWrite1h:  1.60))],
 
         // Legacy Opus 3 — $15/$75
-        "claude-opus-3-20240229":       .init(input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite5m: 18.75, cacheWrite1h: 30.00),
+        "claude-opus-3-20240229":       [.init(effectiveFrom: .distantPast, pricing: .init(input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite5m: 18.75, cacheWrite1h: 30.00))],
 
         // Legacy Haiku 3 — $0.25/$1.25
-        "claude-haiku-3":               .init(input:  0.25, output:  1.25, cacheRead: 0.03, cacheWrite5m:  0.30, cacheWrite1h:  0.50),
-        "claude-haiku-3-20240307":      .init(input:  0.25, output:  1.25, cacheRead: 0.03, cacheWrite5m:  0.30, cacheWrite1h:  0.50),
+        "claude-haiku-3":               [.init(effectiveFrom: .distantPast, pricing: .init(input:  0.25, output:  1.25, cacheRead: 0.03, cacheWrite5m:  0.30, cacheWrite1h:  0.50))],
+        "claude-haiku-3-20240307":      [.init(effectiveFrom: .distantPast, pricing: .init(input:  0.25, output:  1.25, cacheRead: 0.03, cacheWrite5m:  0.30, cacheWrite1h:  0.50))],
     ]
 
     // Fall back to Sonnet pricing for unknown/future models
     static let `default` = ModelPricing(input: 3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m: 3.75, cacheWrite1h: 6.00)
 
-    static func forModel(_ model: String?) -> ModelPricing {
-        guard let model else { return .default }
-        return table[model] ?? .default
+    /// - Parameter messageDate: the timestamp of the message being priced (defaults to
+    ///   now). Determines which pricing tier applies for models with scheduled rate
+    ///   changes, so re-scanning old sessions never reprices them at today's rate.
+    static func forModel(_ model: String?, messageDate: Date = Date()) -> ModelPricing {
+        guard let model, let tiers = schedule[model] else { return .default }
+        var result = tiers[0].pricing
+        for tier in tiers where tier.effectiveFrom <= messageDate {
+            result = tier.pricing
+        }
+        return result
     }
 
     func cost(usage: TokenUsage) -> Double {
