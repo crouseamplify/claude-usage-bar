@@ -109,7 +109,7 @@ struct UsageSummary {
 
 // MARK: - Pricing table (per million tokens, USD)
 //
-// Source: https://platform.claude.com/docs/en/about-claude/pricing (fetched 2026-07-14)
+// Source: https://platform.claude.com/docs/en/about-claude/pricing (fetched 2026-10-01)
 
 struct ModelPricing {
     let input: Double
@@ -138,11 +138,19 @@ private func utcDate(_ year: Int, _ month: Int, _ day: Int) -> Date {
 extension ModelPricing {
 
     private static let schedule: [String: [PricingTier]] = [
-        // Claude Fable 5 / Claude Mythos 5 — $10/$50
+        // Claude Fable 5.1 / Mythos 5.1 — $10/$50, $0.25 cache hits
+        "claude-fable-5-1": [.init(effectiveFrom: .distantPast, pricing: .init(input: 10.00, output: 50.00, cacheRead: 0.25, cacheWrite5m: 12.50, cacheWrite1h: 20.00))],
+        "claude-mythos-5-1": [.init(effectiveFrom: .distantPast, pricing: .init(input: 10.00, output: 50.00, cacheRead: 0.25, cacheWrite5m: 12.50, cacheWrite1h: 20.00))],
+
+        // Claude Fable 5 / Claude Mythos 5 — $10/$50, $1 cache hits
         "claude-fable-5":               [.init(effectiveFrom: .distantPast, pricing: .init(input: 10.00, output: 50.00, cacheRead: 1.00, cacheWrite5m: 12.50, cacheWrite1h: 20.00))],
         "claude-mythos-5":              [.init(effectiveFrom: .distantPast, pricing: .init(input: 10.00, output: 50.00, cacheRead: 1.00, cacheWrite5m: 12.50, cacheWrite1h: 20.00))],
 
-        // Opus 4 family — $5/$25
+        // Claude Opus 5.5 — $4/$20
+        "claude-opus-5-5": [.init(effectiveFrom: .distantPast, pricing: .init(input: 4.00, output: 20.00, cacheRead: 0.20, cacheWrite5m: 5.00, cacheWrite1h: 8.00))],
+
+        // Opus 5 / Opus 4 family — $5/$25
+        "claude-opus-5": [.init(effectiveFrom: .distantPast, pricing: .init(input: 5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m: 6.25, cacheWrite1h: 10.00))],
         "claude-opus-4-8":              [.init(effectiveFrom: .distantPast, pricing: .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00))],
         "claude-opus-4-7":              [.init(effectiveFrom: .distantPast, pricing: .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00))],
         "claude-opus-4-6":              [.init(effectiveFrom: .distantPast, pricing: .init(input:  5.00, output: 25.00, cacheRead: 0.50, cacheWrite5m:  6.25, cacheWrite1h: 10.00))],
@@ -152,11 +160,9 @@ extension ModelPricing {
         "claude-opus-4-1":              [.init(effectiveFrom: .distantPast, pricing: .init(input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite5m: 18.75, cacheWrite1h: 30.00))],
         "claude-opus-4-0":              [.init(effectiveFrom: .distantPast, pricing: .init(input: 15.00, output: 75.00, cacheRead: 1.50, cacheWrite5m: 18.75, cacheWrite1h: 30.00))],
 
-        // Claude Sonnet 5 — introductory $2/$10 through 2026-08-31, then standard $3/$15
-        "claude-sonnet-5": [
-            .init(effectiveFrom: .distantPast,        pricing: .init(input: 2.00, output: 10.00, cacheRead: 0.20, cacheWrite5m: 2.50, cacheWrite1h: 4.00)),
-            .init(effectiveFrom: utcDate(2026, 9, 1),  pricing: .init(input: 3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m: 3.75, cacheWrite1h: 6.00)),
-        ],
+        // Claude Sonnet 5.5 / Sonnet 5 — $2/$10
+        "claude-sonnet-5-5": [.init(effectiveFrom: .distantPast, pricing: .init(input: 2.00, output: 10.00, cacheRead: 0.20, cacheWrite5m: 2.50, cacheWrite1h: 4.00))],
+        "claude-sonnet-5": [.init(effectiveFrom: .distantPast, pricing: .init(input: 2.00, output: 10.00, cacheRead: 0.20, cacheWrite5m: 2.50, cacheWrite1h: 4.00))],
 
         // Sonnet 4 family — $3/$15
         "claude-sonnet-4-6":            [.init(effectiveFrom: .distantPast, pricing: .init(input:  3.00, output: 15.00, cacheRead: 0.30, cacheWrite5m:  3.75, cacheWrite1h:  6.00))],

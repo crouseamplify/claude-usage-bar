@@ -86,7 +86,7 @@ struct SettingsView: View {
         .fixedSize()
         .safeAreaInset(edge: .bottom) {
             HStack(spacing: 6) {
-                Text("Version 1.3.1")
+                Text("Version 1.3.2")
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
                 Text("·")

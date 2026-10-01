@@ -358,6 +358,15 @@ struct MenuView: View {
 
     private func shortModelName(_ model: String) -> String {
         let map: [String: String] = [
+            "claude-fable-5-1": "Fable 5.1",
+            "claude-fable-5": "Fable 5",
+            "claude-mythos-5-1": "Mythos 5.1",
+            "claude-mythos-5": "Mythos 5",
+            "claude-opus-5-5": "Opus 5.5",
+            "claude-opus-5": "Opus 5",
+            "claude-opus-4-8": "Opus 4.8",
+            "claude-sonnet-5-5": "Sonnet 5.5",
+            "claude-sonnet-5": "Sonnet 5",
             "claude-opus-4-7":             "Opus 4.7",
             "claude-opus-4-6":             "Opus 4.6",
             "claude-opus-4-5":             "Opus 4.5",
